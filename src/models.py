@@ -3,12 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
+    __tablename__ ="user"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-    favorite_character= db.relationship("FavoriteCharacter", back_populates="user")
-    favotire_planet=db.relationship("FavoritePlanet", back_populates="user")
+    password = db.Column(db.String(80), nullable=False)
+    is_active = db.Column(db.Boolean(),  nullable=False)
+    favorite= db.relationship("Favorite", back_populates="user")
+    
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -20,31 +21,31 @@ class User(db.Model):
             # do not serialize the password, its a security breach
         }
 class Planet(db.Model):
+    __tablename__ ="planet"
     id=db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     climate = db.Column(db.String(250), nullable=True)
     terrain = db.Column(db.String(250), nullable=True)
     population = db.Column(db.Integer, nullable=True)  
-    favorite_planet=db.relationship("FavoritePlanet", back_populates="planet")
+    favorite=db.relationship("Favorite", back_populates='planet',lazy=True)
 
 class Character(db.Model):
-    id=db.Colum(db.Integer,primary_key=True)  
+    __tablename__ ="character"
+    id=db.Column(db.Integer,primary_key=True)  
     name = db.Column(db.String(250), nullable=False)
     gender = db.Column(db.String(20), nullable=True)
     height = db.Column(db.Integer, nullable=True)
     mass = db.Column(db.Integer, nullable=True)  
-    favorite_character=db.relationship("FavoriteCharacter",back_populates="character")
+    favorite=db.relationship("Favorite",back_populates="character")
 
-class FavoriteCharacter(db.Model):
+class Favorite(db.Model):
+    __tablename__ ="favorite"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    character_id = db.Column(db.Integer, db.ForeignKey('character.id'), nullable=False)
-    user=db.relationship("User",back_populates="favorite_character")
-    character=db.relationship("Character", back_populates="favorite_character")
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'))
+    character_id = db.Column(db.Integer, db.ForeignKey('character.id'))
 
-class FavoritePlanet(db.Model):
-    id=db.Column(db.Interger,primary_key=True)
-    user_id=db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
-    planet_id=db.Column(db.Integer,db.ForeignKey('planet.id'),nullable=False)
-    user=db.relationship("User",back_populates="favorite_planet")
-    planet=db.relationship("Planet",back_populates="favorite_planet")
+    user = db.relationship("User", back_populates="favorite")
+    planet = db.relationship("Planet", back_populates="favorite")
+    character = db.relationship("Character", back_populates="favorite")
+
